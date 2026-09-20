@@ -1,0 +1,67 @@
+[worldserver]
+
+###################################################################################################
+# mod-telemetry-redis
+#
+# Streams playerbot telemetry to a Redis stream (XADD) via hiredis on a dedicated
+# background worker thread. If Redis is unavailable the world is never affected:
+# events are buffered in a bounded in-memory ring and dropped when the buffer is
+# full or when there is no connection. Reconnects happen lazily with backoff.
+#
+# Telemetry is active ONLY when BOTH DadMode.Enabled (owned by mod-bot-economy)
+# and DadMode.Telemetry.Enabled below are 1.
+###################################################################################################
+
+#
+#    DadMode.Telemetry.Enabled
+#        Description: Master switch for this module. Requires DadMode.Enabled=1 too.
+#        Default:     0 (disabled)
+#
+DadMode.Telemetry.Enabled = 0
+
+#
+#    DadMode.Telemetry.RedisHost
+#        Description: Redis server host/IP.
+#        Default:     "127.0.0.1"
+#
+DadMode.Telemetry.RedisHost = "127.0.0.1"
+
+#
+#    DadMode.Telemetry.RedisPort
+#        Description: Redis server port.
+#        Default:     6379
+#
+DadMode.Telemetry.RedisPort = 6379
+
+#
+#    DadMode.Telemetry.Stream
+#        Description: Redis stream key that events are XADD'ed to.
+#        Default:     "wow:events"
+#
+DadMode.Telemetry.Stream = "wow:events"
+
+#
+#    DadMode.Telemetry.PositionIntervalMs
+#        Description: How often (ms) to sample online bot positions. Each tick a
+#                     rotating capped subset of bots is emitted to avoid flooding.
+#        Default:     5000 (minimum enforced: 250)
+#
+DadMode.Telemetry.PositionIntervalMs = 5000
+
+#
+#    DadMode.Telemetry.HeartbeatIntervalMs
+#        Description: How often (ms) to emit a world 'heartbeat' event carrying
+#                     tps, map_diff_ms, uptime_sec and bots_online. Runs on its
+#                     own timer, independent of the position sampler.
+#        Default:     5000 (minimum enforced: 1000)
+#
+DadMode.Telemetry.HeartbeatIntervalMs = 5000
+
+#
+#    DadMode.Telemetry.QueueMax
+#        Description: Max buffered events (ring buffer size) AND the Redis stream
+#                     MAXLEN ~ target. When the ring is full the oldest event is
+#                     dropped. Minimum enforced: 100.
+#        Default:     100000
+#
+DadMode.Telemetry.QueueMax = 100000
